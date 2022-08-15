@@ -41,5 +41,5 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-src/jvmMain/resources/config.json
-src/jvmTest/resources/config.json
+!**/src/jvmMain/resources/config.json
+!**/src/jvmTest/resources/config.json
