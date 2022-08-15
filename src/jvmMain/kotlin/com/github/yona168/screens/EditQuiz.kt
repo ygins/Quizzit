@@ -15,11 +15,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.yona168.*
+import com.github.yona168.database.Database
 import com.github.yona168.questions.*
+import kotlinx.coroutines.runBlocking
 
 
 @Composable
-fun EditQuiz() {
+fun EditQuiz(database: Database) {
     var titleInput by remember { mutableStateOf("Title") }
     var authorInput by remember { mutableStateOf("Author") }
     val questions = remember { mutableStateListOf<Question>() }
@@ -47,6 +49,9 @@ fun EditQuiz() {
                 }
                 item {
                     addQuestionBar { questions += it }
+                }
+                item{
+                    SaveQuizButton(titleInput, authorInput, questions, database)
                 }
             }
         }
@@ -194,3 +199,12 @@ fun ManyChoiceCard(
         }
     }
 
+@Composable
+fun SaveQuizButton(title: String, author: String, questions: List<Question>, database: Database){
+    OutlinedButton(onClick={
+        val quiz=Quiz(SimpleMeta(title, author), questions)
+        runBlocking { database.save(quiz) }
+    }){
+        Text("Save Quiz")
+    }
+}

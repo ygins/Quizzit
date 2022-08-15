@@ -32,7 +32,7 @@ fun App() {
             when (currentScreen) {
                 Screen.Home -> Home(changeScreen)
                 Screen.ViewQuizzes -> ViewQuizzes(database)
-                Screen.EditQuiz -> EditQuiz()
+                Screen.EditQuiz -> EditQuiz(database)
                 else -> Home(changeScreen)
             }
         }
