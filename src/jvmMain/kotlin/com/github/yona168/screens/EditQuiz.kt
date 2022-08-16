@@ -22,7 +22,7 @@ import java.util.*
 
 
 @Composable
-fun EditQuiz(database: Database, goHome: ()->Unit, quizToLoad: UUID? = null) {
+fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
     var titleInput by remember { mutableStateOf("Title") }
     var authorInput by remember { mutableStateOf("Author") }
     val questions = remember { mutableStateListOf<Question>() }
@@ -142,14 +142,16 @@ fun MultipleChoiceCard(
                 Text(if (question.answer == i) "True" else "False")
             }
             IconButton(onClick = {
-                val newOptions = mutableListOf<String>()
-                newOptions.addAll(question.options)
-                newOptions.removeAt(i)
-                var newAnswer = question.answer
-                if (newOptions.indices.contains(question.answer).not()) {
-                    newAnswer = 0
+                if (question.options.size > 1) {
+                    val newOptions = mutableListOf<String>()
+                    newOptions.addAll(question.options)
+                    newOptions.removeAt(i)
+                    var newAnswer = question.answer
+                    if (newOptions.indices.contains(question.answer).not()) {
+                        newAnswer = 0
+                    }
+                    alterQuestion(MultipleChoice(question.question, newOptions, newAnswer))
                 }
-                alterQuestion(MultipleChoice(question.question, newOptions, newAnswer))
             }) {
                 Icon(Icons.Filled.Delete, "Remove Option")
             }
@@ -193,10 +195,12 @@ fun ManyChoiceCard(
                     Text(if (question.answerBooleans[i]) "True" else "False")
                 }
                 IconButton(onClick = {
-                    val newPairs = mutableListOf<BooleanOption>()
-                    newPairs.addAll(question.optionsAndAnswers)
-                    newPairs.removeAt(i)
-                    alterQuestion(ManyChoice(question.question, newPairs))
+                    if (question.options.size > 1) {
+                        val newPairs = mutableListOf<BooleanOption>()
+                        newPairs.addAll(question.optionsAndAnswers)
+                        newPairs.removeAt(i)
+                        alterQuestion(ManyChoice(question.question, newPairs))
+                    }
                 }) {
                     Icon(Icons.Filled.Delete, "Remove Option")
                 }
@@ -213,7 +217,14 @@ fun ManyChoiceCard(
     }
 
 @Composable
-fun SaveQuizButton(title: String, author: String, questions: List<Question>, database: Database, afterSave: ()->Unit, id: UUID? = null) {
+fun SaveQuizButton(
+    title: String,
+    author: String,
+    questions: List<Question>,
+    database: Database,
+    afterSave: () -> Unit,
+    id: UUID? = null
+) {
     OutlinedButton(onClick = {
         val quiz = Quiz(SimpleMeta(title, author, id ?: UUID.randomUUID()), questions)
         runBlocking { database.save(quiz) }
