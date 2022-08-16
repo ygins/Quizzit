@@ -18,12 +18,14 @@ import com.github.yona168.database.SimpleFileDatabase
 import com.github.yona168.screens.EditQuiz
 import com.github.yona168.screens.Home
 import com.github.yona168.screens.ViewQuizzes
+import java.util.*
 
 
 @Composable
 @Preview
 fun App() {
-    var currentScreen by mutableStateOf(Screen.Home)
+    var currentScreen by remember { mutableStateOf(Screen.Home) }
+    var quizToEdit by remember { mutableStateOf<UUID?>(null) }
     val changeScreen = { screen: Screen -> currentScreen = screen }
     val config: Config = remember { Config() }
     val database: Database = remember { SimpleFileDatabase(config) }
@@ -31,9 +33,13 @@ fun App() {
         Common(changeScreen = changeScreen) {
             when (currentScreen) {
                 Screen.Home -> Home(changeScreen)
-                Screen.ViewQuizzes -> ViewQuizzes(database)
-                Screen.EditQuiz -> EditQuiz(database)
-                else -> Home(changeScreen)
+                Screen.ViewQuizzes -> ViewQuizzes(database) { quizMeta ->
+                    quizToEdit = quizMeta.id
+                    currentScreen = Screen.EditQuiz
+                }
+
+                Screen.CreateQuiz -> EditQuiz(database,{changeScreen(Screen.ViewQuizzes)})
+                Screen.EditQuiz -> EditQuiz(database, {changeScreen(Screen.ViewQuizzes)},quizToEdit)
             }
         }
     }
@@ -48,6 +54,7 @@ fun main() = application {
 enum class Screen {
     Home,
     ViewQuizzes,
+    CreateQuiz,
     EditQuiz
 }
 

@@ -13,7 +13,7 @@ fun Home(changeScreen: (Screen) -> Unit) {
         OutlinedButton(onClick = { changeScreen(Screen.ViewQuizzes) }) {
             Text("View Quizzes")
         }
-        OutlinedButton(onClick = {changeScreen(Screen.EditQuiz)}){
+        OutlinedButton(onClick = {changeScreen(Screen.CreateQuiz)}){
             Text("Create New Quiz")
         }
     }

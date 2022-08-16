@@ -14,18 +14,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.github.yona168.*
+import com.github.yona168.Centered
 import com.github.yona168.database.Database
 import com.github.yona168.questions.*
 import kotlinx.coroutines.runBlocking
+import java.util.*
 
 
 @Composable
-fun EditQuiz(database: Database) {
+fun EditQuiz(database: Database, goHome: ()->Unit, quizToLoad: UUID? = null) {
     var titleInput by remember { mutableStateOf("Title") }
     var authorInput by remember { mutableStateOf("Author") }
     val questions = remember { mutableStateListOf<Question>() }
-
+    var inputQuiz by remember { mutableStateOf<Quiz?>(null) }
+    var loaded by remember { mutableStateOf(false) }
+    if (!loaded) {
+        if (quizToLoad != null) {
+            runBlocking {
+                inputQuiz = database.load(quizToLoad)
+            }
+            titleInput = inputQuiz!!.name
+            authorInput = inputQuiz!!.author
+            questions.addAll(inputQuiz!!.questions)
+        }
+        loaded = true
+    }
     Column {
         Row {
             TextField(titleInput, onValueChange = { titleInput = it })
@@ -50,8 +63,8 @@ fun EditQuiz(database: Database) {
                 item {
                     addQuestionBar { questions += it }
                 }
-                item{
-                    SaveQuizButton(titleInput, authorInput, questions, database)
+                item {
+                    SaveQuizButton(titleInput, authorInput, questions, database, afterSave = goHome, inputQuiz?.id)
                 }
             }
         }
@@ -128,26 +141,26 @@ fun MultipleChoiceCard(
             }, modifier = Modifier.weight(1f)) {
                 Text(if (question.answer == i) "True" else "False")
             }
-            IconButton(onClick={
-                val newOptions=mutableListOf<String>()
+            IconButton(onClick = {
+                val newOptions = mutableListOf<String>()
                 newOptions.addAll(question.options)
                 newOptions.removeAt(i)
-                var newAnswer=question.answer
-                if(newOptions.indices.contains(question.answer).not()){
-                    newAnswer=0
+                var newAnswer = question.answer
+                if (newOptions.indices.contains(question.answer).not()) {
+                    newAnswer = 0
                 }
                 alterQuestion(MultipleChoice(question.question, newOptions, newAnswer))
-            }){
+            }) {
                 Icon(Icons.Filled.Delete, "Remove Option")
             }
         }
     }
-    OutlinedButton(onClick={
-        val newOptions=mutableListOf<String>()
+    OutlinedButton(onClick = {
+        val newOptions = mutableListOf<String>()
         newOptions.addAll(question.options)
-        newOptions+="False"
+        newOptions += "False"
         alterQuestion(MultipleChoice(question.question, newOptions, question.answer))
-    }){
+    }) {
         Text("Add Option")
     }
 }
@@ -174,37 +187,38 @@ fun ManyChoiceCard(
                 }, modifier = Modifier.weight(6f))
                 OutlinedButton(onClick = {
                     val newAnswers = question.answerBooleans
-                    newAnswers[i]=newAnswers[i].not()
+                    newAnswers[i] = newAnswers[i].not()
                     alterQuestion(ManyChoice(question.question, question.options.zip(newAnswers)))
                 }, modifier = Modifier.weight(1f)) {
                     Text(if (question.answerBooleans[i]) "True" else "False")
                 }
-                IconButton(onClick={
-                    val newPairs=mutableListOf<BooleanOption>()
+                IconButton(onClick = {
+                    val newPairs = mutableListOf<BooleanOption>()
                     newPairs.addAll(question.optionsAndAnswers)
                     newPairs.removeAt(i)
                     alterQuestion(ManyChoice(question.question, newPairs))
-                }){
+                }) {
                     Icon(Icons.Filled.Delete, "Remove Option")
                 }
             }
         }
         OutlinedButton(onClick = {
-            val newOptions=mutableListOf<String>()
+            val newOptions = mutableListOf<String>()
             newOptions.addAll(question.options)
-            newOptions+="False"
+            newOptions += "False"
             alterQuestion(ManyChoice(question.question, newOptions, question.answer))
-        }){
+        }) {
             Text("Add Option")
         }
     }
 
 @Composable
-fun SaveQuizButton(title: String, author: String, questions: List<Question>, database: Database){
-    OutlinedButton(onClick={
-        val quiz=Quiz(SimpleMeta(title, author), questions)
+fun SaveQuizButton(title: String, author: String, questions: List<Question>, database: Database, afterSave: ()->Unit, id: UUID? = null) {
+    OutlinedButton(onClick = {
+        val quiz = Quiz(SimpleMeta(title, author, id ?: UUID.randomUUID()), questions)
         runBlocking { database.save(quiz) }
-    }){
+        afterSave()
+    }) {
         Text("Save Quiz")
     }
 }
