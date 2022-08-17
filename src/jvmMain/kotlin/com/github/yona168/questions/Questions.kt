@@ -65,17 +65,13 @@ Goals for this class: Need to be able to:
 data class ManyChoice(
     override val question: String, val optionsAndAnswers: List<BooleanOption>
 ) : OptionsQuestion() {
-    constructor(question: String, options: List<String>, answer: List<Int>) : this(
+    constructor(question: String, options: List<String>, answer: Set<Int>) : this(
         question,
         options.mapIndexed { index, str -> str to answer.contains(index) }
     )
 
-    constructor(question: String, map: Map<String, Boolean>) : this(
-        question,
-        map.entries.toList().map { it.key to it.value })
-
-    override val answer: List<Int>
-        get() = optionsAndAnswers.mapIndexed { index, pair -> if (pair.second) index else -1 }.filter { it != -1 }
+    override val answer: Set<Int>
+        get() = optionsAndAnswers.mapIndexed { index, pair -> if (pair.second) index else -1 }.filter { it != -1 }.toSet()
     override val options: List<String>
         get() = optionsAndAnswers.map { it.first }
     val answerBooleans: Array<Boolean>

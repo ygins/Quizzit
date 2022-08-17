@@ -11,6 +11,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -24,7 +25,7 @@ import com.github.yona168.questions.Quiz
 import kotlinx.coroutines.launch
 
 @Composable
-fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit) {
+fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit, openPlayTo: (QuizMeta) -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val quizzes = remember { mutableStateListOf<QuizMeta>() }
     val scrollState = rememberLazyListState()
@@ -34,7 +35,7 @@ fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit) {
     Centered {
         LazyColumn(state = scrollState) {
             items(quizzes.size) { index ->
-                QuizCard(quizzes[index], openEditTo)
+                QuizCard(quizzes[index], openEditTo, openPlayTo)
                 Spacer(modifier = Modifier.padding(10.dp))
             }
         }
@@ -42,12 +43,15 @@ fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit) {
 }
 
 @Composable
-fun QuizCard(quiz: QuizMeta, openEditTo: (QuizMeta)->Unit){
+fun QuizCard(quiz: QuizMeta, openEditTo: (QuizMeta)->Unit, openPlayTo: (QuizMeta)->Unit){
     Card{
         Row{
             Text("${quiz.name} - ${quiz.author}")
             IconButton(onClick={openEditTo(quiz)}){
                 Icon(Icons.Default.Edit, "Edit Quiz")
+            }
+            IconButton(onClick={openPlayTo(quiz)}){
+                Icon(Icons.Default.PlayArrow, "Play Quiz")
             }
         }
     }

@@ -15,8 +15,10 @@ import com.github.yona168.Config
 import com.github.yona168.Theme
 import com.github.yona168.database.Database
 import com.github.yona168.database.SimpleFileDatabase
+import com.github.yona168.questions.QuizMeta
 import com.github.yona168.screens.EditQuiz
 import com.github.yona168.screens.Home
+import com.github.yona168.screens.PlayQuiz
 import com.github.yona168.screens.ViewQuizzes
 import java.util.*
 
@@ -25,21 +27,26 @@ import java.util.*
 @Preview
 fun App() {
     var currentScreen by remember { mutableStateOf(Screen.Home) }
-    var quizToEdit by remember { mutableStateOf<UUID?>(null) }
+    var quizToShow by remember { mutableStateOf<UUID?>(null) }
     val changeScreen = { screen: Screen -> currentScreen = screen }
     val config: Config = remember { Config() }
     val database: Database = remember { SimpleFileDatabase(config) }
+    val openEditTo = {quizMeta: QuizMeta ->
+        quizToShow=quizMeta.id
+        currentScreen=Screen.EditQuiz
+    }
+    val openPlayTo = {quizMeta: QuizMeta ->
+        quizToShow = quizMeta.id
+        currentScreen=Screen.PlayQuiz
+    }
     Theme {
         Common(changeScreen = changeScreen) {
             when (currentScreen) {
                 Screen.Home -> Home(changeScreen)
-                Screen.ViewQuizzes -> ViewQuizzes(database) { quizMeta ->
-                    quizToEdit = quizMeta.id
-                    currentScreen = Screen.EditQuiz
-                }
-
+                Screen.ViewQuizzes -> ViewQuizzes(database, openEditTo, openPlayTo)
                 Screen.CreateQuiz -> EditQuiz(database,{changeScreen(Screen.ViewQuizzes)})
-                Screen.EditQuiz -> EditQuiz(database, {changeScreen(Screen.ViewQuizzes)},quizToEdit)
+                Screen.EditQuiz -> EditQuiz(database, {changeScreen(Screen.ViewQuizzes)},quizToShow)
+                Screen.PlayQuiz->PlayQuiz(database, quizToShow as UUID)
             }
         }
     }
@@ -55,7 +62,8 @@ enum class Screen {
     Home,
     ViewQuizzes,
     CreateQuiz,
-    EditQuiz
+    EditQuiz,
+    PlayQuiz
 }
 
 @Composable
