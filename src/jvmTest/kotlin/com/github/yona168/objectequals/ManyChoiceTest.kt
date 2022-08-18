@@ -7,6 +7,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 internal class ManyChoiceTest {
     @Test
     fun getAnswer() {
-        assertEquals(listOf(1, 2, 4), manyChoice.answer)
+        assertEquals(setOf(1, 2, 4), manyChoice.answer)
     }
 }
