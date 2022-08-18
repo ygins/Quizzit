@@ -226,10 +226,12 @@ fun SaveQuizButton(
     id: UUID? = null
 ) {
     OutlinedButton(onClick = {
-        val quiz = Quiz(SimpleMeta(title, author, id ?: UUID.randomUUID()), questions)
-        runBlocking { database.save(quiz) }
-        afterSave()
+        if(questions.isNotEmpty()){
+            val quiz = Quiz(SimpleMeta(title, author, id ?: UUID.randomUUID()), questions)
+            runBlocking { database.save(quiz) }
+            afterSave()
+        }
     }) {
-        Text("Save Quiz")
+        Text(if(questions.isNotEmpty()) "Save Quiz" else "Please add at least one question")
     }
 }

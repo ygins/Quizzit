@@ -30,7 +30,12 @@ fun PlayQuiz(database: Database, quizId: UUID) {
     if (quiz != null) {
         answers = remember { mutableStateListOf(*arrayOfNulls(quiz!!.questions.size)) }
         if (!review) {
-            FirstTake(quiz!!, answers) { review = true }
+            FirstTake(quiz!!, answers) {
+                review = true
+                if (quiz!!.questions.none { it is ShortAnswer }) {
+                    report = true
+                }
+            }
         } else if (!report) {
             ReviewShortAnswer(quiz!!, answers, correctShortAnswerIndices) { report = true }
         } else {
@@ -57,8 +62,8 @@ fun FirstTake(quiz: Quiz, answers: MutableList<Any?>, changeToReview: () -> Unit
                     is ManyChoice -> ManyChoiceQuestion(
                         question, i,
                         (answers.let {
-                            if(it[i]==null){
-                                it[i]=setOf<Int>()
+                            if (it[i] == null) {
+                                it[i] = setOf<Int>()
                             }
                             it[i] as Set<Int>
                         }), answerWith
@@ -121,19 +126,23 @@ fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>, correctIndices: MutableSe
 }
 
 @Composable
-fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<Int>){
-    val correctIndices = quiz.questions.indices.filter{i->
-        val question=quiz.questions[i]
-        when(question){
+fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<Int>) {
+    val correctIndices = quiz.questions.indices.filter { i ->
+        val question = quiz.questions[i]
+        when (question) {
             is ShortAnswer -> correctShortAnswerIndices.contains(i)
-            else-> question.answer==answers[i]
+            else -> question.answer == answers[i]
         }
     }
-    val amountCorrect=correctIndices.size
-    Centered{
-       Card{
-           Text("You answered $amountCorrect out of ${quiz.questions.size} correctly (${amountCorrect.toDouble()/quiz.questions.size.toDouble()}%)", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-       }
+    val amountCorrect = correctIndices.size
+    Centered {
+        Card {
+            Text(
+                "You answered $amountCorrect out of ${quiz.questions.size} correctly (${amountCorrect.toDouble() / quiz.questions.size.toDouble()}%)",
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
+        }
     }
 
 }
