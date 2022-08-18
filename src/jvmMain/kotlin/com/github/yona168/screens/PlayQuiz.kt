@@ -21,25 +21,27 @@ import java.util.*
 fun PlayQuiz(database: Database, quizId: UUID) {
     var quiz: Quiz? by remember { mutableStateOf(null) }
     val answers: SnapshotStateList<Any?>
-    var review by remember{mutableStateOf(false)}
+    val correctShortAnswerIndices by remember { mutableStateOf(mutableSetOf<Int>()) }
+    var review by remember { mutableStateOf(false) }
+    var report by remember { mutableStateOf(false) }
     runBlocking {
         quiz = database.load(quizId)
-        answers = mutableStateListOf(*arrayOfNulls(quiz!!.questions.size))
     }
     if (quiz != null) {
-        remember{answers}
-        if(!review){
-            FirstTake(quiz!!, answers){review=true}
-        }
-        else{
-            ReviewShortAnswer(quiz!!, answers)
+        answers = remember { mutableStateListOf(*arrayOfNulls(quiz!!.questions.size)) }
+        if (!review) {
+            FirstTake(quiz!!, answers) { review = true }
+        } else if (!report) {
+            ReviewShortAnswer(quiz!!, answers, correctShortAnswerIndices) { report = true }
+        } else {
+            FinalReport(quiz!!, answers, correctShortAnswerIndices)
         }
     }
 }
 
 
 @Composable
-fun FirstTake(quiz: Quiz, answers: MutableList<Any?>, changeToReview: ()->Unit) {
+fun FirstTake(quiz: Quiz, answers: MutableList<Any?>, changeToReview: () -> Unit) {
     Centered {
         LazyColumn {
             item {
@@ -54,23 +56,32 @@ fun FirstTake(quiz: Quiz, answers: MutableList<Any?>, changeToReview: ()->Unit) 
                     is MultipleChoice -> MultipleChoiceQuestion(question, i, answers[i] as (Int?), answerWith)
                     is ManyChoice -> ManyChoiceQuestion(
                         question, i,
-                        ((answers[i] as Set<Int>?) ?: setOf()), answerWith
+                        (answers.let {
+                            if(it[i]==null){
+                                it[i]=setOf<Int>()
+                            }
+                            it[i] as Set<Int>
+                        }), answerWith
                     )
                 }
                 Spacer(modifier = Modifier.padding(3.dp))
             }
             item {
-                OutlinedButton(onClick = changeToReview) {
-                    Text("Submit")
+                OutlinedButton(onClick = {
+                    if (answers.all { it != null }) {
+                        changeToReview()
+                    }
+                }) {
+                    Text(if (answers.all { it != null }) "Submit" else "Answer all questions before submitting")
                 }
             }
         }
     }
 }
+
 @Composable
-fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>) {
-    val shortAnswerIndices = quiz.questions.indices.filter { quiz.questions[it] is ShortAnswer }
-    val correctIndices = remember { mutableSetOf<Int>() }
+fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>, correctIndices: MutableSet<Int>, moveOnToReport: () -> Unit) {
+    val shortAnswerIndices = remember { quiz.questions.indices.filter { quiz.questions[it] is ShortAnswer } }
     val removed = remember { mutableStateListOf<Int>() }
     Centered {
         LazyColumn {
@@ -81,18 +92,23 @@ fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>) {
                         Text("Question ${i + 1}: ${question.question}", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         Text("Your answer:", fontWeight = FontWeight.Bold)
                         Text(answers[i] as String)
-                        Text("Correct answer:")
+                        Text("Correct answer:", fontWeight = FontWeight.Bold)
                         Text(question.answer)
                         Text("Did you get it right?", fontWeight = FontWeight.Bold)
                         Row {
+                            val checkIfDone = { if (removed.size == shortAnswerIndices.size) moveOnToReport() }
                             OutlinedButton(onClick = {
                                 removed += i
                                 correctIndices += i
+                                checkIfDone()
                             }) {
                                 Text("Yes!")
                             }
                             Spacer(modifier = Modifier.padding(3.dp))
-                            OutlinedButton(onClick = { removed += i }) {
+                            OutlinedButton(onClick = {
+                                removed += i
+                                checkIfDone()
+                            }) {
                                 Text("Ill get it next time")
                             }
                         }
@@ -102,6 +118,24 @@ fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>) {
             }
         }
     }
+}
+
+@Composable
+fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<Int>){
+    val correctIndices = quiz.questions.indices.filter{i->
+        val question=quiz.questions[i]
+        when(question){
+            is ShortAnswer -> correctShortAnswerIndices.contains(i)
+            else-> question.answer==answers[i]
+        }
+    }
+    val amountCorrect=correctIndices.size
+    Centered{
+       Card{
+           Text("You answered $amountCorrect out of ${quiz.questions.size} correctly (${amountCorrect.toDouble()/quiz.questions.size.toDouble()}%)", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+       }
+    }
+
 }
 
 @Composable
