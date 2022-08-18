@@ -8,12 +8,13 @@ import java.util.*
 interface Database {
     suspend fun save(quiz: Quiz)
     suspend fun load(quizId: UUID): Quiz
+
+    suspend fun delete(quizId: UUID)
     suspend fun listQuizzes():List<SimpleMeta>
 }
 
 interface FileDatabase : Database {
     val dataFolder: Path
-    override suspend fun save(quiz: Quiz)
     override suspend fun load(quizId: UUID): Quiz = load(getQuizFolder(quizId))
 
     suspend fun load(saveFolder: QuizDataFolder): Quiz

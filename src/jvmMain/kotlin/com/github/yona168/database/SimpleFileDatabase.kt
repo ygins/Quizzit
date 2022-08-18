@@ -8,6 +8,7 @@ import kotlinx.serialization.builtins.serializer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import kotlin.io.path.exists
 import kotlin.streams.toList
 
@@ -33,6 +34,11 @@ class SimpleFileDatabase(config: Config):FileDatabase {
             Files.writeString(quizPathData.data, serialized.metadata)
             Files.writeString(quizPathData.questions, serialized.questions)
         }
+    }
+
+    override suspend fun delete(quizId: UUID)= withContext(Dispatchers.IO){
+        val dataFolder=getQuizFolder(quizId)
+        listOf(dataFolder.questions, dataFolder.data, dataFolder.quizFolder).forEach(Files::delete)
     }
 
     override suspend fun load(saveFolder: FileDatabase.QuizDataFolder)= withContext(Dispatchers.IO){

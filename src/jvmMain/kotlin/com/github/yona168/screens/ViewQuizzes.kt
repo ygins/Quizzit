@@ -10,6 +10,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import com.github.yona168.questions.QuizMeta
 import com.github.yona168.database.Database
 import com.github.yona168.questions.Quiz
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit, openPlayTo: (QuizMeta) -> Unit) {
@@ -35,7 +37,12 @@ fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit, openPlayTo: 
     Centered {
         LazyColumn(state = scrollState) {
             items(quizzes.size) { index ->
-                QuizCard(quizzes[index], openEditTo, openPlayTo)
+                QuizCard(quizzes[index], openEditTo, openPlayTo){
+                    runBlocking{
+                        database.delete(quizzes[index].id)
+                        quizzes.remove(quizzes[index])
+                    }
+                }
                 Spacer(modifier = Modifier.padding(10.dp))
             }
         }
@@ -43,7 +50,7 @@ fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit, openPlayTo: 
 }
 
 @Composable
-fun QuizCard(quiz: QuizMeta, openEditTo: (QuizMeta)->Unit, openPlayTo: (QuizMeta)->Unit){
+fun QuizCard(quiz: QuizMeta, openEditTo: (QuizMeta)->Unit, openPlayTo: (QuizMeta)->Unit, delete: (QuizMeta)->Unit){
     Card{
         Row{
             Text("${quiz.name} - ${quiz.author}")
@@ -52,6 +59,9 @@ fun QuizCard(quiz: QuizMeta, openEditTo: (QuizMeta)->Unit, openPlayTo: (QuizMeta
             }
             IconButton(onClick={openPlayTo(quiz)}){
                 Icon(Icons.Default.PlayArrow, "Play Quiz")
+            }
+            IconButton(onClick={delete(quiz)}){
+                Icon(Icons.Default.Delete, "Delete Quiz")
             }
         }
     }
