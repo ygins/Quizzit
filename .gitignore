@@ -43,3 +43,5 @@ bin/
 
 !**/src/jvmMain/resources/config.json
 !**/src/jvmTest/resources/config.json
+
+testoutput/
