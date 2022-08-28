@@ -17,6 +17,7 @@ interface ConfigInfo {
 
 class Config : ConfigInfo by Json.decodeFromString(
     SimpleConfigInfo.serializer(),
+
     Files.readString(
         Paths.get(
             Thread.currentThread().contextClassLoader.getResource("config.json").toURI()
