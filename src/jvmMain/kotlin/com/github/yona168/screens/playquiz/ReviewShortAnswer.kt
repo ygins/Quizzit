@@ -44,23 +44,29 @@ fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>, correctIndices: MutableSe
     val removed = remember { mutableStateListOf<Int>() }
     Centered {
         LazyColumn {
-            items(shortAnswerIndices.size) { i ->
-                if (i !in removed) {
-                    val question = quiz.questions[i] as ShortAnswer
-                    Column {
-                        Text("Question ${i + 1}: ${question.question}", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                        Text("Your answer:", fontWeight = FontWeight.Bold)
-                        Text(answers[i] as String)
-                        Text("Correct answer:", fontWeight = FontWeight.Bold)
-                        Text(question.answer)
-                        Text("Did you get it right?", fontWeight = FontWeight.Bold)
-                        CheckShortAnswerButtons(
-                            confirmCorrect = {correctIndices+=i},
-                            remove = {removed+=i},
-                            checkIfDone = {if (removed.size == shortAnswerIndices.size) moveOnToReport() }
-                        )
+            for(i in shortAnswerIndices) {
+                item{ 
+                    if (i !in removed) {
+                        val question = quiz.questions[i] as ShortAnswer
+                        Column {
+                            Text(
+                                "Question ${i + 1}: ${question.question}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            )
+                            Text("Your answer:", fontWeight = FontWeight.Bold)
+                            Text(answers[i] as String)
+                            Text("Correct answer:", fontWeight = FontWeight.Bold)
+                            Text(question.answer)
+                            Text("Did you get it right?", fontWeight = FontWeight.Bold)
+                            CheckShortAnswerButtons(
+                                confirmCorrect = { correctIndices += i },
+                                remove = { removed += i },
+                                checkIfDone = { if (removed.size == shortAnswerIndices.size) moveOnToReport() }
+                            )
+                        }
+                        Spacer(modifier = Modifier.padding(3.dp))
                     }
-                    Spacer(modifier = Modifier.padding(3.dp))
                 }
             }
         }
