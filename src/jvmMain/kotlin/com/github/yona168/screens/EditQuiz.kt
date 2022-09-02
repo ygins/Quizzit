@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.yona168.BoldText
 import com.github.yona168.Centered
 import com.github.yona168.database.Database
 import com.github.yona168.questions.*
@@ -55,9 +56,6 @@ fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
                         is ShortAnswer -> ShortAnswerCard(item, i, removeQuestion, alterQuestion)
                         is MultipleChoice -> MultipleChoiceCard(item, i, removeQuestion, alterQuestion)
                         is ManyChoice -> ManyChoiceCard(item, i, removeQuestion, alterQuestion)
-                        else -> {
-                            throw RuntimeException("Unsupported Question. How did this happen? :)")
-                        }
                     }
                 }
                 item {
@@ -98,7 +96,7 @@ fun QuestionCard(index: Int, removeQuestion: () -> Unit, style: String, content:
     Card(modifier = Modifier.padding(vertical = 8.dp)) {
         Row {
             Column(modifier = Modifier.weight(6f)) {
-                Text("Question ${index + 1} - $style", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                BoldText("Question ${index + 1} - $style", fontSize = 20.sp)
                 content()
             }
             IconButton(onClick = removeQuestion, modifier = Modifier.weight(1f)) {

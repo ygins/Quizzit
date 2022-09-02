@@ -13,21 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.yona168.BoldText
 import com.github.yona168.Centered
 import com.github.yona168.questions.ManyChoice
 import com.github.yona168.questions.OptionsQuestion
 import com.github.yona168.questions.Quiz
 import com.github.yona168.questions.ShortAnswer
-
-@Composable
-fun ReportOptionsCard(question: OptionsQuestion, show: Set<Int>) {
-    for (i in question.options.indices) {
-        Row {
-            RadioButton(selected = show.contains(i), onClick = {})
-            Text("\n${question.options[i]}")
-        }
-    }
-}
 
 @Composable
 fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<Int>) {
@@ -62,18 +53,17 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
                             when (question) {
                                 is ShortAnswer -> {
                                     Row {
-                                        Text(
-                                            "Your answer: ",
-                                            fontWeight = FontWeight.Bold
+                                        BoldText(
+                                            "Your answer: "
                                         ); Text(answers[i] as String)
                                     }
-                                    Row { Text("Actual answer: ", fontWeight = FontWeight.Bold); Text(question.answer) }
+                                    Row { BoldText("Actual answer: "); Text(question.answer) }
                                 }
 
                                 is OptionsQuestion -> {
                                     Row {
                                         Column {
-                                            Text("Your Answer:")
+                                            BoldText("Your Answer:")
                                             Spacer(modifier=Modifier.padding(2.dp))
                                             ReportOptionsCard(
                                                 question = question,
@@ -83,7 +73,7 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
                                             )
                                         }
                                         Column {
-                                            Text("Correct Answer:")
+                                            BoldText("Correct Answer:")
                                             Spacer(modifier = Modifier.padding(2.dp))
                                             ReportOptionsCard(
                                                 question = question,
@@ -103,4 +93,13 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
 
     }
 
+}
+@Composable
+fun ReportOptionsCard(question: OptionsQuestion, show: Set<Int>) {
+    for (i in question.options.indices) {
+        Row {
+            RadioButton(selected = show.contains(i), onClick = {})
+            Text("\n${question.options[i]}")
+        }
+    }
 }
