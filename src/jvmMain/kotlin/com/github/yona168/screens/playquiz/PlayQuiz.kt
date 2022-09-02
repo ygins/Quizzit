@@ -1,4 +1,4 @@
-package com.github.yona168.screens
+package com.github.yona168.screens.playquiz
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,14 +44,18 @@ fun PlayQuiz(database: Database, quizId: UUID) {
     }
 }
 
+@Composable
+fun QuizTitle(quiz: Quiz) {
+    Text("${quiz.name} by ${quiz.author}", fontWeight = FontWeight.Bold, fontSize = 27.sp)
+    Spacer(modifier = Modifier.padding(3.dp))
+}
 
 @Composable
 fun FirstTake(quiz: Quiz, answers: MutableList<Any?>, changeToReview: () -> Unit) {
     Centered {
         LazyColumn {
             item {
-                Text("${quiz.name} by ${quiz.author}", fontWeight = FontWeight.Bold, fontSize = 27.sp)
-                Spacer(modifier = Modifier.padding(3.dp))
+                QuizTitle(quiz)
             }
             items(quiz.questions.size) { i ->
                 val question = quiz.questions[i]
@@ -72,79 +76,17 @@ fun FirstTake(quiz: Quiz, answers: MutableList<Any?>, changeToReview: () -> Unit
                 Spacer(modifier = Modifier.padding(3.dp))
             }
             item {
+                val answeredAllQuestions = { answers.all { it != null } }
                 OutlinedButton(onClick = {
-                    if (answers.all { it != null }) {
+                    if (answeredAllQuestions()) {
                         changeToReview()
                     }
                 }) {
-                    Text(if (answers.all { it != null }) "Submit" else "Answer all questions before submitting")
+                    Text(if (answeredAllQuestions()) "Submit" else "Answer all questions before submitting")
                 }
             }
         }
     }
-}
-
-@Composable
-fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>, correctIndices: MutableSet<Int>, moveOnToReport: () -> Unit) {
-    val shortAnswerIndices = remember { quiz.questions.indices.filter { quiz.questions[it] is ShortAnswer } }
-    val removed = remember { mutableStateListOf<Int>() }
-    Centered {
-        LazyColumn {
-            items(shortAnswerIndices.size) { i ->
-                if (i !in removed) {
-                    val question = quiz.questions[i] as ShortAnswer
-                    Column {
-                        Text("Question ${i + 1}: ${question.question}", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                        Text("Your answer:", fontWeight = FontWeight.Bold)
-                        Text(answers[i] as String)
-                        Text("Correct answer:", fontWeight = FontWeight.Bold)
-                        Text(question.answer)
-                        Text("Did you get it right?", fontWeight = FontWeight.Bold)
-                        Row {
-                            val checkIfDone = { if (removed.size == shortAnswerIndices.size) moveOnToReport() }
-                            OutlinedButton(onClick = {
-                                removed += i
-                                correctIndices += i
-                                checkIfDone()
-                            }) {
-                                Text("Yes!")
-                            }
-                            Spacer(modifier = Modifier.padding(3.dp))
-                            OutlinedButton(onClick = {
-                                removed += i
-                                checkIfDone()
-                            }) {
-                                Text("Ill get it next time")
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.padding(3.dp))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<Int>) {
-    val correctIndices = quiz.questions.indices.filter { i ->
-        val question = quiz.questions[i]
-        when (question) {
-            is ShortAnswer -> correctShortAnswerIndices.contains(i)
-            else -> question.answer == answers[i]
-        }
-    }
-    val amountCorrect = correctIndices.size
-    Centered {
-        Card {
-            Text(
-                "You answered $amountCorrect out of ${quiz.questions.size} correctly (${amountCorrect.toDouble() / quiz.questions.size.toDouble()}%)",
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
-            )
-        }
-    }
-
 }
 
 @Composable
