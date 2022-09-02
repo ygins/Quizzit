@@ -76,6 +76,4 @@ data class ManyChoice(
         get() = optionsAndAnswers.map { it.first }
     val answerBooleans: Array<Boolean>
         get() = Array(optionsAndAnswers.size) { optionsAndAnswers[it].second }
-    val optionsAndAnswersMap: Map<String, Boolean>
-        get() = mutableMapOf(*optionsAndAnswers.toTypedArray())
 }

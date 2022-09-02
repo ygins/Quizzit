@@ -4,14 +4,15 @@ import com.github.yona168.Config
 import com.github.yona168.questions.Quiz
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.builtins.serializer
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.*
 import kotlin.io.path.exists
-import kotlin.streams.toList
 
+/**
+ * A simple implementation of [FileDatabase]
+ * @param[config] the [Config] to use to determine where to store the files
+ */
 class SimpleFileDatabase(config: Config):FileDatabase {
     private val serializer= SimpleSerializer()
     override val dataFolder: Path = config.fileDatabasePath
@@ -31,18 +32,18 @@ class SimpleFileDatabase(config: Config):FileDatabase {
             }
         }
         withContext(Dispatchers.IO) {
-            Files.writeString(quizPathData.data, serialized.metadata)
+            Files.writeString(quizPathData.metadata, serialized.metadata)
             Files.writeString(quizPathData.questions, serialized.questions)
         }
     }
 
     override suspend fun delete(quizId: UUID)= withContext(Dispatchers.IO){
         val dataFolder=getQuizFolder(quizId)
-        listOf(dataFolder.questions, dataFolder.data, dataFolder.quizFolder).forEach(Files::delete)
+        listOf(dataFolder.questions, dataFolder.metadata, dataFolder.quizFolder).forEach(Files::delete)
     }
 
     override suspend fun load(saveFolder: FileDatabase.QuizDataFolder)= withContext(Dispatchers.IO){
-        val serialized=SerializedQuiz(metadata = Files.readString(saveFolder.data), questions=Files.readString(saveFolder.questions))
+        val serialized=SerializedQuiz(metadata = Files.readString(saveFolder.metadata), questions=Files.readString(saveFolder.questions))
         return@withContext serializer.deserialize(serialized)
     }
 
