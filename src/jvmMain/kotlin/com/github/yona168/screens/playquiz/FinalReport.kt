@@ -1,9 +1,6 @@
 package com.github.yona168.screens.playquiz
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Card
 import androidx.compose.material.RadioButton
@@ -15,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.yona168.BoldText
 import com.github.yona168.Centered
+import com.github.yona168.SmallSpacer
 import com.github.yona168.questions.ManyChoice
 import com.github.yona168.questions.OptionsQuestion
 import com.github.yona168.questions.Quiz
@@ -32,13 +30,11 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
     Centered {
         LazyColumn {
             item {
-                Card {
-                    Text(
-                        "You answered $amountCorrect out of ${quiz.questions.size} correctly (${(amountCorrect.toDouble() / quiz.questions.size.toDouble()) * 100}%)",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                    BoldText(
+                        "You answered $amountCorrect out of ${quiz.questions.size} correctly (${(amountCorrect.toDouble() / quiz.questions.size.toDouble()) * 100}%)\n" +
+                                "Incorrect answers are shown below",
+                        fontSize = 25.sp
                     )
-                }
             }
             for (i in quiz.questions.indices) {
                 if (i in correctIndices) {
@@ -46,10 +42,10 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
                 }
                 val question = quiz.questions[i]
                 item {
-                    Spacer(modifier = Modifier.padding(3.dp))
-                    Card {
+                    SmallSpacer()
+                    Card(modifier=Modifier.fillMaxWidth()){
                         Column {
-                            Text(question.question, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                            BoldText("Question $i: ${question.question}", fontSize = 20.sp)
                             when (question) {
                                 is ShortAnswer -> {
                                     Row {
@@ -57,14 +53,15 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
                                             "Your answer: "
                                         ); Text(answers[i] as String)
                                     }
-                                    Row { BoldText("Actual answer: "); Text(question.answer) }
+                                    SmallSpacer()
+                                    Row { BoldText("Correct answer: "); Text(question.answer) }
                                 }
 
                                 is OptionsQuestion -> {
                                     Row {
                                         Column {
                                             BoldText("Your Answer:")
-                                            Spacer(modifier=Modifier.padding(2.dp))
+                                            SmallSpacer()
                                             ReportOptionsCard(
                                                 question = question,
                                                 show = if (question is ManyChoice) answers[i] as Set<Int> else setOf(
@@ -72,9 +69,10 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
                                                 )
                                             )
                                         }
+                                        SmallSpacer()
                                         Column {
                                             BoldText("Correct Answer:")
-                                            Spacer(modifier = Modifier.padding(2.dp))
+                                            SmallSpacer()
                                             ReportOptionsCard(
                                                 question = question,
                                                 show = if (question is ManyChoice) question.answer else setOf(
@@ -92,7 +90,6 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
         }
 
     }
-
 }
 @Composable
 fun ReportOptionsCard(question: OptionsQuestion, show: Set<Int>) {

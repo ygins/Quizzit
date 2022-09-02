@@ -45,7 +45,7 @@ fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>, correctIndices: MutableSe
     Centered {
         LazyColumn {
             for(i in shortAnswerIndices) {
-                item{ 
+                item{
                     if (i !in removed) {
                         val question = quiz.questions[i] as ShortAnswer
                         Column {
