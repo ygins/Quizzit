@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.github.yona168.Centered
 import com.github.yona168.questions.QuizMeta
 import com.github.yona168.database.Database
-import com.github.yona168.questions.Quiz
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -36,13 +35,14 @@ fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit, openPlayTo: 
     }
     Centered {
         LazyColumn(state = scrollState) {
-            items(quizzes.size) { index ->
-                QuizCard(quizzes[index], openEditTo, openPlayTo){
-                    runBlocking{
-                        database.delete(quizzes[index].id)
-                        quizzes.remove(quizzes[index])
-                    }
+            fun deleteQuiz(index: Int): (QuizMeta) -> Unit = {
+                runBlocking {
+                    database.delete(quizzes[index].id)
+                    quizzes.remove(quizzes[index])
                 }
+            }
+            items(quizzes.size) { index ->
+                QuizCard(quizzes[index], openEditTo, openPlayTo, deleteQuiz(index))
                 Spacer(modifier = Modifier.padding(10.dp))
             }
         }
