@@ -24,28 +24,21 @@ import java.util.*
 @Composable
 @Preview
 fun App() {
-    var currentScreen by remember { mutableStateOf(Screen.Home) }
-    var quizToShow by remember { mutableStateOf<UUID?>(null) }
-    val changeScreen = { screen: Screen -> currentScreen = screen }
+    var loaded by remember{mutableStateOf(false)}
+    var currentFunc by remember{mutableStateOf<@Composable ()->Unit>({})}
     val config: Config = remember { Config() }
     val database: Database = remember { SimpleFileDatabase(config) }
-    val openEditTo = { quizMeta: QuizMeta ->
-        quizToShow = quizMeta.id
-        currentScreen = Screen.EditQuiz
+    @Composable
+    fun GoHome(){
+        Home(changeScreen = {currentFunc=it}, database = database)
     }
-    val openPlayTo = { quizMeta: QuizMeta ->
-        quizToShow = quizMeta.id
-        currentScreen = Screen.PlayQuiz
+    if(!loaded){
+        currentFunc = {GoHome()}
+        loaded=true
     }
     Theme {
-        Common(changeScreen = changeScreen) {
-            when (currentScreen) {
-                Screen.Home -> Home(changeScreen)
-                Screen.ViewQuizzes -> ViewQuizzes(database, openEditTo, openPlayTo)
-                Screen.CreateQuiz -> EditQuiz(database, { changeScreen(Screen.ViewQuizzes) })
-                Screen.EditQuiz -> EditQuiz(database, { changeScreen(Screen.ViewQuizzes) }, quizToShow)
-                Screen.PlayQuiz -> PlayQuiz(database, quizToShow as UUID)
-            }
+        Common(goHome = {currentFunc = {GoHome()}}) {
+            currentFunc()
         }
     }
 }
@@ -56,19 +49,11 @@ fun main() = application {
     }
 }
 
-enum class Screen {
-    Home,
-    ViewQuizzes,
-    CreateQuiz,
-    EditQuiz,
-    PlayQuiz
-}
-
 @Composable
-fun Common(changeScreen: (Screen) -> Unit, content: @Composable () -> Unit) {
+fun Common(goHome: ()->Unit, content: @Composable () -> Unit) {
     Row(modifier = Modifier.fillMaxSize().background(Theme.colors.primary)) {
         Column(modifier = Modifier.background(Theme.colors.secondary).fillMaxHeight().width(50.dp)) {
-            IconButton(onClick = { changeScreen(Screen.Home) }) {
+            IconButton(onClick = goHome) {
                 Icon(Icons.Filled.Home, contentDescription = "Home")
             }
         }
