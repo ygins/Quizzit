@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.yona168.BoldText
@@ -41,11 +40,7 @@ fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
         loaded = true
     }
     Column {
-        Row {
-            TextField(titleInput, onValueChange = { titleInput = it })
-            Spacer(modifier = Modifier.padding(5.dp))
-            TextField(authorInput, onValueChange = { authorInput = it })
-        }
+        TitleAndAuthorInput(titleInput, changeTitle = {titleInput=it}, authorInput, changeAuthor = {authorInput=it})
         Centered {
             LazyColumn(modifier = Modifier.padding(10.dp)) {
                 itemsIndexed(questions) { i, item ->
@@ -59,7 +54,7 @@ fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
                     }
                 }
                 item {
-                    addQuestionBar { questions += it }
+                    AddQuestionBar { questions += it }
                 }
                 item {
                     SaveQuizButton(titleInput, authorInput, questions, database, afterSave = goHome, inputQuiz?.id)
@@ -70,7 +65,15 @@ fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
 }
 
 @Composable
-fun addQuestionBar(addQuestion: (Question) -> Unit) {
+fun TitleAndAuthorInput(title: String, changeTitle: (String) -> Unit, author: String, changeAuthor: (String)->Unit){
+    Row {
+        TextField(title, onValueChange = changeTitle)
+        Spacer(modifier = Modifier.padding(5.dp))
+        TextField(author, onValueChange = changeAuthor)
+    }
+}
+@Composable
+fun AddQuestionBar(addQuestion: (Question) -> Unit) {
     Row {
         OutlinedButton(onClick = { addQuestion(ShortAnswer("Question", "Answer")) }) {
             Text("Add Short Answer")
