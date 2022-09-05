@@ -14,7 +14,7 @@ import kotlin.io.path.exists
  */
 class SimpleFileDatabase : FileDatabase {
     private val serializer = SimpleSerializer()
-    override val dataFolder: Path = Paths.get(System.getProperty(".Quizzit"), "quizzes")
+    override val dataFolder: Path = Paths.get(System.getProperty("user.home"), ".Quizzit")
 
     init {
         if (!dataFolder.exists()) {
