@@ -2,7 +2,7 @@
 Simple application to make & take quizzes
 
 ### Installation
-Download the .exe installer from the resources page
+Download the .exe installer from the releases page
 
 ### Mechanics
 Quizzit stores quizzes in the filesystem (perhaps in the future there will be more options, but not yet).
