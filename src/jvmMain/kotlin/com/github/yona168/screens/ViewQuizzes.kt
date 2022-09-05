@@ -25,6 +25,12 @@ import com.github.yona168.database.Database
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+/**
+ * Handles the logic for looking at the list of quizzes -
+ * 1) Deletes quizzes
+ * 2) Opens a quiz to take
+ * 3) Opens a quiz to edit
+ */
 @Composable
 fun ViewQuizzes(database: Database, openEditTo: (QuizMeta) -> Unit, openPlayTo: (QuizMeta) -> Unit) {
     val coroutineScope = rememberCoroutineScope()

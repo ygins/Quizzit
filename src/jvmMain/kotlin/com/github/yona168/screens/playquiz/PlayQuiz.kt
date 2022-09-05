@@ -17,6 +17,13 @@ import com.github.yona168.questions.*
 import kotlinx.coroutines.runBlocking
 import java.util.*
 
+/**
+ * Playing a quiz is handled in three sections:
+ * 1) Taking the quiz, handled by the [FirstTake] function
+ * 2) Since this program doesn't do machine learning, it us up to the user to check their Short Answer questions.
+ * This is handled by [ReviewShortAnswer]
+ * 3) The [FinalReport] function shows the users final score
+ */
 @Composable
 fun PlayQuiz(database: Database, quizId: UUID) {
     var quiz: Quiz? by remember { mutableStateOf(null) }
@@ -77,18 +84,21 @@ fun FirstTake(quiz: Quiz, answers: MutableList<Any?>, changeToReview: () -> Unit
             }
             item {
                 val answeredAllQuestions = { answers.all { it != null } }
-                OutlinedButton(onClick = {
-                    if (answeredAllQuestions()) {
-                        changeToReview()
-                    }
-                }) {
-                    Text(if (answeredAllQuestions()) "Submit" else "Answer all questions before submitting")
-                }
+                SubmitButton(answeredAllQuestions, changeToReview)
             }
         }
     }
 }
-
+@Composable
+fun SubmitButton(answeredAllQuestions: ()->Boolean, changeToReview: () -> Unit){
+    OutlinedButton(onClick = {
+        if (answeredAllQuestions()) {
+            changeToReview()
+        }
+    }) {
+        Text(if (answeredAllQuestions()) "Submit" else "Answer all questions before submitting")
+    }
+}
 @Composable
 fun CommonQuestion(question: Question, index: Int, content: @Composable () -> Unit) {
     Centered {

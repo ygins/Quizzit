@@ -44,3 +44,18 @@ fun BoldText(text: String, fontSize: TextUnit = TextUnit.Unspecified) = Text(tex
 
 @Composable
 fun SmallSpacer() = Spacer(modifier=Modifier.padding(3.dp))
+
+fun <T> List<T>.copyAndSetAt(newValue: T, index: Int): List<T>{
+    val newList = mutableListOf<T>()
+    newList.addAll(this)
+    newList.removeAt(index)
+    newList.add(index, newValue)
+    return this
+}
+
+fun <T> List<T>.copyAndRemoveAt(index: Int): List<T>{
+    val newList = mutableListOf<T>()
+    newList.addAll(this)
+    newList.removeAt(index)
+    return this
+}

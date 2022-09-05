@@ -18,9 +18,12 @@ import com.github.yona168.questions.OptionsQuestion
 import com.github.yona168.questions.Quiz
 import com.github.yona168.questions.ShortAnswer
 
+/**
+ * Handles showing the final report for how the user did
+ */
 @Composable
 fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<Int>) {
-    val correctIndices = quiz.questions.indices.filter { i ->
+    val correctIndices = quiz.questions.indices.filter { i -> //All the indices of questions that the user got correct
         when (val question = quiz.questions[i]) {
             is ShortAnswer -> correctShortAnswerIndices.contains(i)
             else -> question.answer == answers[i]
@@ -37,7 +40,7 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
                     )
             }
             for (i in quiz.questions.indices) {
-                if (i in correctIndices) {
+                if (i in correctIndices) { //Display wrong answers
                     continue
                 }
                 val question = quiz.questions[i]
@@ -91,6 +94,10 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
 
     }
 }
+
+/**
+ * If the question is [ManyChoice] or [MultipleChoiceQuestion], this creates a view showing the incorrect vs correct answers
+ */
 @Composable
 fun ReportOptionsCard(question: OptionsQuestion, show: Set<Int>) {
     for (i in question.options.indices) {

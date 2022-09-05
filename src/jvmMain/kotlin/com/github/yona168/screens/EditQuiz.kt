@@ -15,32 +15,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.yona168.BoldText
 import com.github.yona168.Centered
+import com.github.yona168.copyAndRemoveAt
+import com.github.yona168.copyAndSetAt
 import com.github.yona168.database.Database
 import com.github.yona168.questions.*
 import kotlinx.coroutines.runBlocking
 import java.util.*
 
-
+/**
+ * Handles editing a quiz
+ */
 @Composable
 fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
     var titleInput by remember { mutableStateOf("Title") }
     var authorInput by remember { mutableStateOf("Author") }
     val questions = remember { mutableStateListOf<Question>() }
-    var inputQuiz by remember { mutableStateOf<Quiz?>(null) }
-    var loaded by remember { mutableStateOf(false) }
-    if (!loaded) {
-        if (quizToLoad != null) {
-            runBlocking {
-                inputQuiz = database.load(quizToLoad)
-            }
-            titleInput = inputQuiz!!.name
-            authorInput = inputQuiz!!.author
-            questions.addAll(inputQuiz!!.questions)
+    var quizId by remember { mutableStateOf<UUID?>(null) }
+    if (quizToLoad != null && quizId == null) { //Loads the input quiz from the database
+        val inputQuiz: Quiz
+        runBlocking {
+            inputQuiz = database.load(quizToLoad)
         }
-        loaded = true
+        titleInput = inputQuiz.name
+        authorInput = inputQuiz.author
+        quizId=inputQuiz.id
+        questions.addAll(inputQuiz.questions)
+    } else if(quizToLoad==null && quizId==null){ //Creating a new quiz
+        quizId=UUID.randomUUID()
     }
     Column {
-        TitleAndAuthorInput(titleInput, changeTitle = {titleInput=it}, authorInput, changeAuthor = {authorInput=it})
+        TitleAndAuthorInput(
+            titleInput,
+            changeTitle = { titleInput = it },
+            authorInput,
+            changeAuthor = { authorInput = it })
         Centered {
             LazyColumn(modifier = Modifier.padding(10.dp)) {
                 itemsIndexed(questions) { i, item ->
@@ -57,7 +65,7 @@ fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
                     AddQuestionBar { questions += it }
                 }
                 item {
-                    SaveQuizButton(titleInput, authorInput, questions, database, afterSave = goHome, inputQuiz?.id)
+                    SaveQuizButton(titleInput, authorInput, questions, database, afterSave = goHome, quizId)
                 }
             }
         }
@@ -65,13 +73,17 @@ fun EditQuiz(database: Database, goHome: () -> Unit, quizToLoad: UUID? = null) {
 }
 
 @Composable
-fun TitleAndAuthorInput(title: String, changeTitle: (String) -> Unit, author: String, changeAuthor: (String)->Unit){
+fun TitleAndAuthorInput(title: String, changeTitle: (String) -> Unit, author: String, changeAuthor: (String) -> Unit) {
     Row {
         TextField(title, onValueChange = changeTitle)
         Spacer(modifier = Modifier.padding(5.dp))
         TextField(author, onValueChange = changeAuthor)
     }
 }
+
+/**
+ * Displays the buttons that add questions
+ */
 @Composable
 fun AddQuestionBar(addQuestion: (Question) -> Unit) {
     Row {
@@ -129,10 +141,7 @@ fun MultipleChoiceCard(
     for (i in 0 until question.options.size) {
         Row {
             TextField(question.options[i], onValueChange = {
-                val newOptions = mutableListOf<String>()
-                newOptions.addAll(question.options)
-                newOptions.removeAt(i)
-                newOptions.add(i, it)
+                val newOptions = question.options.copyAndSetAt(it, i)
                 alterQuestion(MultipleChoice(question.question, newOptions, question.answer))
             }, modifier = Modifier.weight(6f))
             OutlinedButton(onClick = {
@@ -144,9 +153,7 @@ fun MultipleChoiceCard(
             }
             IconButton(onClick = {
                 if (question.options.size > 1) {
-                    val newOptions = mutableListOf<String>()
-                    newOptions.addAll(question.options)
-                    newOptions.removeAt(i)
+                    val newOptions = question.options.copyAndRemoveAt(i)
                     var newAnswer = question.answer
                     if (newOptions.indices.contains(question.answer).not()) {
                         newAnswer = 0
@@ -182,10 +189,7 @@ fun ManyChoiceCard(
         for (i in 0 until question.options.size) {
             Row {
                 TextField(question.options[i], onValueChange = {
-                    val newOptions = mutableListOf<String>()
-                    newOptions.addAll(question.options)
-                    newOptions.removeAt(i)
-                    newOptions.add(i, it)
+                    val newOptions = question.options.copyAndSetAt(it, i)
                     alterQuestion(ManyChoice(question.question, newOptions, question.answer))
                 }, modifier = Modifier.weight(6f))
                 OutlinedButton(onClick = {
@@ -197,9 +201,7 @@ fun ManyChoiceCard(
                 }
                 IconButton(onClick = {
                     if (question.options.size > 1) {
-                        val newPairs = mutableListOf<BooleanOption>()
-                        newPairs.addAll(question.optionsAndAnswers)
-                        newPairs.removeAt(i)
+                        val newPairs = question.optionsAndAnswers.copyAndRemoveAt(i)
                         alterQuestion(ManyChoice(question.question, newPairs))
                     }
                 }) {
@@ -227,12 +229,12 @@ fun SaveQuizButton(
     id: UUID? = null
 ) {
     OutlinedButton(onClick = {
-        if(questions.isNotEmpty()){
+        if (questions.isNotEmpty()) {
             val quiz = Quiz(SimpleMeta(title, author, id ?: UUID.randomUUID()), questions)
             runBlocking { database.save(quiz) }
             afterSave()
         }
     }) {
-        Text(if(questions.isNotEmpty()) "Save Quiz" else "Please add at least one question")
+        Text(if (questions.isNotEmpty()) "Save Quiz" else "Please add at least one question")
     }
 }

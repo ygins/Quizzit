@@ -18,26 +18,9 @@ import com.github.yona168.Centered
 import com.github.yona168.questions.Quiz
 import com.github.yona168.questions.ShortAnswer
 
-@Composable
-fun CheckShortAnswerButtons(confirmCorrect: () -> Unit, remove: () -> Unit, checkIfDone: () -> Unit) {
-    Row {
-        OutlinedButton(onClick = {
-            confirmCorrect()
-            remove()
-            checkIfDone()
-        }) {
-            Text("Yes!")
-        }
-        Spacer(modifier = Modifier.padding(3.dp))
-        OutlinedButton(onClick = {
-            remove()
-            checkIfDone()
-        }) {
-            Text("Ill get it next time")
-        }
-    }
-}
-
+/**
+ * Handles reviewing the short answer questions
+ */
 @Composable
 fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>, correctIndices: MutableSet<Int>, moveOnToReport: () -> Unit) {
     val shortAnswerIndices = remember { quiz.questions.indices.filter { quiz.questions[it] is ShortAnswer } }
@@ -69,6 +52,26 @@ fun ReviewShortAnswer(quiz: Quiz, answers: List<Any?>, correctIndices: MutableSe
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CheckShortAnswerButtons(confirmCorrect: () -> Unit, remove: () -> Unit, checkIfDone: () -> Unit) {
+    Row {
+        OutlinedButton(onClick = {
+            confirmCorrect()
+            remove()
+            checkIfDone()
+        }) {
+            Text("Yes!")
+        }
+        Spacer(modifier = Modifier.padding(3.dp))
+        OutlinedButton(onClick = {
+            remove()
+            checkIfDone()
+        }) {
+            Text("Ill get it next time")
         }
     }
 }

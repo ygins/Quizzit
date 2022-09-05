@@ -7,7 +7,9 @@ import java.util.*
 typealias BooleanOption = Pair<String, Boolean>
 typealias Author = String
 
-
+/**
+ * The non-question data of a quiz
+ */
 sealed interface QuizMeta {
     val name: String
     val author: Author
@@ -21,6 +23,9 @@ data class SimpleMeta(
     @Serializable(with = UUIDAsStringSerializer::class) override val id: UUID = UUID.randomUUID()
 ) : QuizMeta
 
+/**
+ * Data object containing both the metadata and a list of questions
+ */
 @Serializable
 data class Quiz(
     val data: SimpleMeta,
@@ -32,12 +37,18 @@ data class Quiz(
     )
 }
 
+/**
+ * A question has a question and an answer
+ */
 @Serializable
 sealed class Question {
     abstract val question: String
     abstract val answer: Any
 }
 
+/**
+ * A short answer question is simple: Question is a string, and the answer is a string
+ */
 @Serializable
 data class ShortAnswer(override val question: String, override val answer: String) : Question()
 
@@ -46,6 +57,9 @@ sealed class OptionsQuestion : Question() {
     abstract val options: List<String>
 }
 
+/**
+ * A multiple choice question gives many options, with one correct answer, represented by the index of the correct answer in [options]
+ */
 @Serializable
 data class MultipleChoice(override val question: String, override val options: List<String>, override val answer: Int) :
     OptionsQuestion() {
@@ -56,10 +70,8 @@ data class MultipleChoice(override val question: String, override val options: L
     )
 }
 
-/*
-Goals for this class: Need to be able to:
-1) Iterate over each option with its boolean pair
-2) Based on a clicked option, change its answer
+/**
+ * A many choice question can have many answers, represented by a boolean connected to that option in [optionsAndAnswers]
  */
 @Serializable
 data class ManyChoice(
