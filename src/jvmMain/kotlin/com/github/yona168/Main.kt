@@ -13,33 +13,29 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.github.yona168.database.Database
 import com.github.yona168.database.SimpleFileDatabase
-import com.github.yona168.questions.QuizMeta
-import com.github.yona168.screens.EditQuiz
 import com.github.yona168.screens.Home
-import com.github.yona168.screens.playquiz.PlayQuiz
-import com.github.yona168.screens.ViewQuizzes
-import java.util.*
 
 
 @Composable
 @Preview
 fun App() {
-    var loaded by remember{mutableStateOf(false)}
-    var currentFunc by remember{mutableStateOf<@Composable ()->Unit>({})}
-    val config: Config = remember { Config() }
-    val database: Database = remember { SimpleFileDatabase(config) }
+    var loaded by remember { mutableStateOf(false) }
+    var currentFunc by remember { mutableStateOf<@Composable () -> Unit>({}) }
+    val database: Database = remember { SimpleFileDatabase() }
+
     @Composable
-    fun GoHome(){
-        Home(changeScreen = {currentFunc=it}, database = database)
+    fun GoHome() {
+        Home(changeScreen = { currentFunc = it }, database = database)
     }
-    if(!loaded){
-        currentFunc = {GoHome()}
-        loaded=true
+    if (!loaded) {
+        currentFunc = { GoHome() }
+        loaded = true
     }
     Theme {
-        Common(goHome = {currentFunc = {GoHome()}}) {
+        Common(goHome = { currentFunc = { GoHome() } }) {
             currentFunc()
         }
+
     }
 }
 
@@ -50,7 +46,7 @@ fun main() = application {
 }
 
 @Composable
-fun Common(goHome: ()->Unit, content: @Composable () -> Unit) {
+fun Common(goHome: () -> Unit, content: @Composable () -> Unit) {
     Row(modifier = Modifier.fillMaxSize().background(Theme.colors.primary)) {
         Column(modifier = Modifier.background(Theme.colors.secondary).fillMaxHeight().width(50.dp)) {
             IconButton(onClick = goHome) {
