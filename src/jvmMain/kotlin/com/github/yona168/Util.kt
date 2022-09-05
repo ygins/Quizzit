@@ -6,6 +6,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -40,22 +41,23 @@ fun LeftColumn(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun BoldText(text: String, fontSize: TextUnit = TextUnit.Unspecified) = Text(text, fontWeight = FontWeight.Bold, fontSize = fontSize)
+fun BoldText(text: String, fontSize: TextUnit = TextUnit.Unspecified, color: Color = Color.Companion.Unspecified, modifier: Modifier = Modifier) =
+    Text(text, fontWeight = FontWeight.Bold, fontSize = fontSize, color = color, modifier=modifier)
 
 @Composable
-fun SmallSpacer() = Spacer(modifier=Modifier.padding(3.dp))
+fun SmallSpacer() = Spacer(modifier = Modifier.padding(3.dp))
 
-fun <T> List<T>.copyAndSetAt(newValue: T, index: Int): List<T>{
+fun <T> List<T>.copyAndSetAt(newValue: T, index: Int): List<T> {
     val newList = mutableListOf<T>()
     newList.addAll(this)
     newList.removeAt(index)
     newList.add(index, newValue)
-    return this
+    return newList
 }
 
-fun <T> List<T>.copyAndRemoveAt(index: Int): List<T>{
+fun <T> List<T>.copyAndRemoveAt(index: Int): List<T> {
     val newList = mutableListOf<T>()
     newList.addAll(this)
     newList.removeAt(index)
-    return this
+    return newList
 }

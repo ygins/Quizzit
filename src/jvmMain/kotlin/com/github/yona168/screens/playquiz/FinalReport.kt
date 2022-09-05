@@ -1,14 +1,14 @@
 package com.github.yona168.screens.playquiz
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Card
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import com.github.yona168.BoldText
 import com.github.yona168.Centered
@@ -33,60 +33,62 @@ fun FinalReport(quiz: Quiz, answers: List<Any?>, correctShortAnswerIndices: Set<
     Centered {
         LazyColumn {
             item {
-                    BoldText(
-                        "You answered $amountCorrect out of ${quiz.questions.size} correctly (${(amountCorrect.toDouble() / quiz.questions.size.toDouble()) * 100}%)\n" +
-                                "Incorrect answers are shown below",
-                        fontSize = 25.sp
-                    )
+                BoldText(
+                    "You answered $amountCorrect out of ${quiz.questions.size} correctly (${(amountCorrect.toDouble() / quiz.questions.size.toDouble()) * 100}%)\n" +
+                            "Your answers are shown below",
+                    fontSize = 25.sp
+                )
             }
             for (i in quiz.questions.indices) {
-                if (i in correctIndices) { //Display wrong answers
-                    continue
-                }
+                fun isCorrect() = i in correctIndices
                 val question = quiz.questions[i]
                 item {
                     SmallSpacer()
-                    Card(modifier=Modifier.fillMaxWidth()){
-                        Column {
-                            BoldText("Question $i: ${question.question}", fontSize = 20.sp)
-                            when (question) {
-                                is ShortAnswer -> {
-                                    Row {
-                                        BoldText(
-                                            "Your answer: "
-                                        ); Text(answers[i] as String)
-                                    }
-                                    SmallSpacer()
-                                    Row { BoldText("Correct answer: "); Text(question.answer) }
-                                }
-
-                                is OptionsQuestion -> {
-                                    Row {
-                                        Column {
-                                            BoldText("Your Answer:")
-                                            SmallSpacer()
-                                            ReportOptionsCard(
-                                                question = question,
-                                                show = if (question is ManyChoice) answers[i] as Set<Int> else setOf(
-                                                    answers[i] as Int
-                                                )
-                                            )
+                    Row {
+                        Card(modifier = Modifier.weight(7f)) {
+                            Column {
+                                BoldText("Question ${i + 1}: ${question.question}", fontSize = 20.sp)
+                                when (question) {
+                                    is ShortAnswer -> {
+                                        Row {
+                                            BoldText(
+                                                "Your answer: "
+                                            ); Text(answers[i] as String)
                                         }
                                         SmallSpacer()
-                                        Column {
-                                            BoldText("Correct Answer:")
-                                            SmallSpacer()
-                                            ReportOptionsCard(
-                                                question = question,
-                                                show = if (question is ManyChoice) question.answer else setOf(
-                                                    question.answer as Int
+                                        Row { BoldText("Correct answer: "); Text(question.answer) }
+                                    }
+
+                                    is OptionsQuestion -> {
+                                        Row {
+                                            Column {
+                                                BoldText("Your Answer:")
+                                                SmallSpacer()
+                                                ReportOptionsCard(
+                                                    question = question,
+                                                    show = if (question is ManyChoice) answers[i] as Set<Int> else setOf(
+                                                        answers[i] as Int
+                                                    )
                                                 )
-                                            )
+                                            }
+                                            SmallSpacer()
+                                            Column {
+                                                BoldText("Correct Answer:")
+                                                SmallSpacer()
+                                                ReportOptionsCard(
+                                                    question = question,
+                                                    show = if (question is ManyChoice) question.answer else setOf(
+                                                        question.answer as Int
+                                                    )
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+                        SmallSpacer()
+                        CorrectText(isCorrect(), modifier = Modifier.weight(1.5f))
                     }
                 }
             }
@@ -106,4 +108,14 @@ fun ReportOptionsCard(question: OptionsQuestion, show: Set<Int>) {
             Text("\n${question.options[i]}")
         }
     }
+}
+
+@Composable
+fun CorrectText(correct: Boolean, modifier: Modifier = Modifier) {
+    BoldText(
+        if (correct) "Correct!" else "Incorrect",
+        20.sp,
+        color = if (correct) Color.Green else Color.Red,
+        modifier = modifier
+    )
 }

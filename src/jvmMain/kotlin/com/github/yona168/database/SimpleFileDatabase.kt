@@ -17,7 +17,6 @@ class SimpleFileDatabase : FileDatabase {
     override val dataFolder: Path = Paths.get(System.getProperty("user.home"), "quizzes")
 
     init {
-        println(dataFolder.toString())
         if (!dataFolder.exists()) {
             Files.createDirectory(dataFolder)
         }
